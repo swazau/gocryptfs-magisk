@@ -23,14 +23,16 @@ Create the encrypted directory using ```gocryptfs -init /sdcard/enc```, enter a 
 
 Mount the encrypted directory to the decrypted one using ```gocryptfs -allow_other /sdcard/enc /sdcard/dec```, enter your password.
 
-Your output will contain some syscall and initcode errors, ignore these, as long as you get a green output with "Filesystem mounted successfully", then it is ready to use, if you have followed the above requirements and set your namespace to global, then navigate to your preferred file explorer and open /sdcard/dec, at this point it should be empty, place some files you would like encrypted. After doing this, check the enc directory to make sure it has the equivilent number of files, they will have random names, this is good, everything is working correctly.
+Your output will contain some syscall and initcode errors, ignore these, as long as you get a green output with "Filesystem mounted successfully", then it is ready to use, if you have followed the above requirements and set your namespace to global, then navigate to your preferred file explorer and open ```/sdcard/dec```, at this point it should be empty, place some files you would like encrypted. After doing this, check the enc directory to make sure it has the equivilent number of files, they will have random names, this is good, everything is working correctly.
 
 
 ## Usage
 To mount an already created filesystem, if you have rebooted or unmounted it is simple.
 ```gocryptfs -allow_other /sdcard/enc /sdcard/dec``` will have it remounted, and all your encrypted files will appear in the dec folder.
 
-To unmount the encrypted filesystem, use ```fusermount -u /sdcard/dec```, to check it has been unmounted you can use ```mount | grep gocryptfs```, this should show no mounted filesystems.
+To unmount the encrypted filesystem, use ```fusermount -u /sdcard/dec```.
+
+To view mounted filesystems, use ```mount | grep gocryptfs```.
 
 
 ## Important Note
