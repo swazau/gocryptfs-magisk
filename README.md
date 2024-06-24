@@ -15,7 +15,9 @@ Current version: v1.0
 Flash Module and reboot. Check installation by running ```fusermount``` or ```gocryptfs``` in a terminal like Termux (as root user)
 
 ## Initial Setup
-Create two folders, one for encryption and one for decrypted files. For example ```mkdir enc dec```. I will assume these have been created in the /sdcard root for this example.
+Open your perferred terminal, for example Termux, execute ```su``` to make yourself the root user.
+
+Create two folders, one for encrypted and one for decrypted files. For example ```mkdir enc dec```. I will assume these have been created in the ```/sdcard``` root.
 
 Create the encrypted directory using ```gocryptfs -init /sdcard/enc```, enter a password.
 
