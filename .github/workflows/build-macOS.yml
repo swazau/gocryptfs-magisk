@@ -1,9 +1,5 @@
 name: Build gocryptfs for M1 Mac
 on:
-  push:
-    branches: [ workflows ]
-  pull_request:
-    branches: [ workflows ]
   workflow_dispatch:
 
 jobs:
