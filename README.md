@@ -16,8 +16,11 @@ Flash Module and reboot. Check installation by running ```fusermount``` or ```go
 
 ## Initial Setup
 Create two folders, one for encryption and one for decrypted files. For example ```mkdir enc dec```. I will assume these have been created in the /sdcard root for this example.
+
 Create the encrypted directory using ```gocryptfs -init /sdcard/enc```, enter a password.
+
 Mount the encrypted directory to the decrypted one using ```gocryptfs -allow_other /sdcard/enc /sdcard/dec```, enter your password.
+
 Your output will contain some syscall and initcode errors, ignore these, as long as you get a green output with "Filesystem mounted successfully", then it is ready to use, if you have followed the above requirements and set your namespace to global, then navigate to your preferred file explorer and open /sdcard/dec, at this point it should be empty, place some files you would like encrypted. After doing this, check the enc directory to make sure it has the equivilent number of files, they will have random names, this is good, everything is working correctly.
 
 
