@@ -35,7 +35,8 @@ jobs:
         
     - name: Build gocryptfs
       run: |
-        go build -ldflags "-X github.com/rfjakob/gocryptfs/v2/internal/configfile.GitVersion=${{ env.version }} -X github.com/rfjakob/gocryptfs/v2/internal/configfile.GitVersionFuse=${{ env.version }} -X github.com/rfjakob/gocryptfs/v2/internal/configfile.BuildDate=$(date +%Y-%m-%d)" -o gocryptfs
+        go build -ldflags "-X main.GitVersion=${{ env.version }} -X main.GitVersionFuse=${{ env.version }} -X main.BuildDate=$(date +%Y-%m-%d) \
+          -linkmode external -extldflags '-fno-PIC -static'" -buildmode=pie -tags without_openssl -o gocryptfs
         
     - name: Upload artifact
       uses: actions/upload-artifact@v4
