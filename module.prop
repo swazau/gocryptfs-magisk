@@ -1,0 +1,6 @@
+id=gocryptfs_module
+name=GoCryptFS - Magisk
+version=v1.0
+versionCode=1
+author=swazau
+description=A Magisk module to provide gocryptfs and fusermount binaries in /system/bin.
