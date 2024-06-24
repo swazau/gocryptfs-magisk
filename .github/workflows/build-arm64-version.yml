@@ -1,4 +1,4 @@
-name: Build gocryptfs for ARM64
+name: Build gocryptfs for ARM64 including version
 
 on:
   push:
