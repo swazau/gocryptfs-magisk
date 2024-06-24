@@ -33,7 +33,7 @@ jobs:
         
     - name: Build gocryptfs
       run: |
-        CGO_ENABLED=1 go build -v -tags without_openssl -ldflags="-s -w -extldflags=-static" -o gocryptfs .
+        CGO_ENABLED=1 go build -v -tags without_openssl -ldflags="-s -w -extldflags=-static -extldflags=-Wl,-dynamic-linker=/system/bin/linker64" -buildmode=pie -o gocryptfs .
         
     - name: Strip debug information
       run: strip gocryptfs
