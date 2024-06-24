@@ -1,0 +1,67 @@
+name: Build gocryptfs for ARM64 and package as Magisk module
+on:
+  push:
+    branches: [ workflows ]
+  pull_request:
+    branches: [ workflows ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    
+    steps:
+    - name: Checkout gocryptfs
+      uses: actions/checkout@v3
+      with:
+        repository: rfjakob/gocryptfs
+        ref: master
+        fetch-depth: 0
+        
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+        
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libssl-dev libfuse-dev pkg-config
+        
+    - name: Generate go.sum
+      run: go mod tidy
+        
+    - name: Get version info
+      run: echo "version=$(git describe --tags HEAD)" >> $GITHUB_ENV
+        
+    - name: Build gocryptfs
+      run: |
+        go build -ldflags "-X main.GitVersion=${{ env.version }} -X main.GitVersionFuse=${{ env.version }} -X main.BuildDate=$(date +%Y-%m-%d) \
+          -linkmode external -extldflags '-fno-PIC -static -Wl,--dynamic-linker=/system/bin/linker64'" -buildmode=pie -tags without_openssl -o gocryptfs
+        
+    - name: Strip debug information
+      run: strip gocryptfs
+        
+    - name: Checkout gocryptfs-magisk repository
+      uses: actions/checkout@v3
+      with:
+        path: gocryptfs-magisk
+        
+    - name: Copy binary to Magisk module folder
+      run: |
+        mkdir -p gocryptfs-magisk/system/bin
+        cp gocryptfs gocryptfs-magisk/system/bin/
+        
+    - name: Commit changes
+      run: |
+        cd gocryptfs-magisk
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add system/bin/gocryptfs
+        git commit -m "Update gocryptfs binary"
+        
+    - name: Create Pull Request
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cd gocryptfs-magisk
+        gh pr create --title "Update gocryptfs binary" --body "Automated update of gocryptfs binary"
