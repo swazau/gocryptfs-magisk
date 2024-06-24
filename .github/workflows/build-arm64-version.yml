@@ -17,6 +17,7 @@ jobs:
       with:
         repository: rfjakob/gocryptfs
         ref: master
+        fetch-depth: 0
         
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -31,10 +32,13 @@ jobs:
     - name: Generate go.sum
       run: go mod tidy
         
+    - name: Get version info
+      run: echo "version=$(git describe --tags HEAD)" >> $GITHUB_ENV
+        
     - name: Build gocryptfs
       run: |
-        LDFLAGS="-linkmode external -extldflags '-fno-PIC -static -Wl,--dynamic-linker=/system/bin/linker64'"
-        ./build.bash --ldflags="$LDFLAGS" --goflags='-buildmode=pie' without_openssl
+        go build -ldflags "-X main.GitVersion=${{ env.version }} -X main.GitVersionFuse=${{ env.version }} -X main.BuildDate=$(date +%Y-%m-%d) \
+          -linkmode external -extldflags '-fno-PIC -static -Wl,--dynamic-linker=/system/bin/linker64'" -buildmode=pie -tags without_openssl -o gocryptfs
         
     - name: Strip debug information
       run: strip gocryptfs
