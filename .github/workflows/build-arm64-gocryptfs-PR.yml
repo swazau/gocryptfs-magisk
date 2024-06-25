@@ -1,4 +1,4 @@
-name: Build gocryptfs for ARM64 and package as Magisk module
+name: Build gocryptfs for ARM64 and create PR
 
 on:
   push:
