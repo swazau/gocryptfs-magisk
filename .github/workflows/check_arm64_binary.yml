@@ -2,7 +2,7 @@ name: Check gocryptfs binary
 
 on:
   push:
-    branches: [ workflows ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:  # This allows manual triggering
