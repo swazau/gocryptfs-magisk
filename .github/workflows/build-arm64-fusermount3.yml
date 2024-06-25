@@ -21,12 +21,16 @@ jobs:
         meson .. -Ddefault_library=static -Dudevrulesdir=/etc/udev/rules.d
         ninja
         sudo ninja install
+    - name: Generate fuse_config.h
+      run: |
+        cd libfuse/build
+        meson configure
     - name: Build static fusermount3
       run: |
         gcc -static -o fusermount3.static \
           libfuse/util/fusermount.c \
           libfuse/lib/mount_util.c \
-          -I libfuse/include \
+          -I libfuse/include -I libfuse/build \
           -L/usr/local/lib -lfuse3 -lpthread
     - name: Strip binary
       run: strip fusermount3.static
