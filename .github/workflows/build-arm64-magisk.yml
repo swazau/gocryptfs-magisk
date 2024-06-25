@@ -65,7 +65,7 @@ jobs:
       with:
         token: ${{ secrets.ACTIONS_SECRET }}
         path: gocryptfs-magisk
-        base: master
+        base: main
         branch: update-gocryptfs-binary
         title: Update gocryptfs binary to version ${{ env.version }}
         body: |
