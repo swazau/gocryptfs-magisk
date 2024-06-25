@@ -44,25 +44,20 @@ jobs:
     - name: Checkout gocryptfs-magisk repository
       uses: actions/checkout@v3
       with:
+        repository: swazau/gocryptfs-magisk
         path: gocryptfs-magisk
+        token: ${{ secrets.PAT_TOKEN }}
         
     - name: Copy binary to Magisk module folder
       run: |
         mkdir -p gocryptfs-magisk/system/bin
         cp gocryptfs gocryptfs-magisk/system/bin/
         
-    - name: Commit changes
-      run: |
-        cd gocryptfs-magisk
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add system/bin/gocryptfs
-        git commit -m "Update gocryptfs binary"
-        
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.ACTIONS_SECRET }}
+        path: gocryptfs-magisk
         branch: update-gocryptfs-binary
         title: Update gocryptfs binary
         body: |
