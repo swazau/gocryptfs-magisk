@@ -5,7 +5,7 @@ on:
     branches: [ workflows ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # This allows manual triggering
+  workflow_dispatch:  
 
 jobs:
   check_binary:
