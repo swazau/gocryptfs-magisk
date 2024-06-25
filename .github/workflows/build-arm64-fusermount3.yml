@@ -1,24 +1,18 @@
 name: Build static fusermount3 for ARM64
-
 on:
   push:
     branches: [ main ]
-
 jobs:
   build:
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
-
     steps:
     - uses: actions/checkout@v3
-
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential meson ninja-build pkg-config libfuse3-dev udev
-
     - name: Clone libfuse
       run: git clone https://github.com/libfuse/libfuse.git
-
     - name: Build static libfuse
       run: |
         cd libfuse
@@ -27,18 +21,17 @@ jobs:
         meson .. -Ddefault_library=static -Dudevrulesdir=/etc/udev/rules.d
         ninja
         sudo ninja install
-
+    - name: Copy fuse_config.h
+      run: |
+        sudo cp libfuse/include/fuse_config.h /usr/local/include/
     - name: Create static fusermount3 binary
       run: |
         cd libfuse/util
-        gcc -static fusermount.c -o fusermount3.static $(pkg-config fuse3 --cflags --libs) -lpthread
-
+        gcc -static -I/usr/local/include fusermount.c -o fusermount3.static $(pkg-config fuse3 --cflags --libs) -lpthread
     - name: Strip binary
       run: strip libfuse/util/fusermount3.static
-
     - name: Copy fusermount3 binary
       run: cp libfuse/util/fusermount3.static ./fusermount3
-
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
