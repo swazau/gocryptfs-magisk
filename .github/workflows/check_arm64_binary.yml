@@ -1,11 +1,14 @@
 name: Check gocryptfs binary
 
 on:
+  push:
+    branches: [ workflows ]
   pull_request:
     branches: [ workflows ]
 
 jobs:
   check_binary:
+    if: github.event_name != 'push'
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
     
     steps:
