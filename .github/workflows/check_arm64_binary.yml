@@ -43,9 +43,23 @@ jobs:
         repository: swazau/gocryptfs-magisk
         ref: ${{ github.event.pull_request.head.sha || github.ref }}
         
+    - name: List repository contents
+      run: |
+        echo "Repository contents:"
+        ls -R
+        
+    - name: Check if gocryptfs binary exists
+      run: |
+        if [ -f "./system/bin/gocryptfs" ]; then
+          echo "gocryptfs binary found"
+        else
+          echo "gocryptfs binary not found"
+          exit 1
+        fi
+
     - name: Set execute permission
       run: chmod +x ./system/bin/gocryptfs
-
+      
     - name: Check binary version
       run: |
         ./system/bin/gocryptfs --version
