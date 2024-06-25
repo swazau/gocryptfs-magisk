@@ -13,7 +13,7 @@ jobs:
         sudo apt-get install -y build-essential meson ninja-build pkg-config libfuse3-dev udev
     - name: Clone libfuse
       run: git clone https://github.com/libfuse/libfuse.git
-    - name: Build static libfuse
+    - name: Build libfuse
       run: |
         cd libfuse
         mkdir build
@@ -21,20 +21,17 @@ jobs:
         meson .. -Ddefault_library=static -Dudevrulesdir=/etc/udev/rules.d
         ninja
         sudo ninja install
-    - name: Generate fuse_config.h
+    - name: Build fusermount3
       run: |
-        cd libfuse/build
-        meson configure
+        cd libfuse/build/util
+        ninja fusermount3
     - name: Create static fusermount3 binary
       run: |
-        cd libfuse/util
-        gcc -static -I../include -I../build fusermount.c -o fusermount3.static $(pkg-config fuse3 --cflags --libs) -lpthread
+        gcc -static -o fusermount3.static libfuse/build/util/fusermount3 -L/usr/local/lib -lpthread -lfuse3
     - name: Strip binary
-      run: strip libfuse/util/fusermount3.static
-    - name: Copy fusermount3 binary
-      run: cp libfuse/util/fusermount3.static ./fusermount3
+      run: strip fusermount3.static
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: fusermount3-arm64-static
-        path: ./fusermount3
+        path: ./fusermount3.static
