@@ -5,9 +5,11 @@ on:
     branches: [ workflows ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:  # This allows manual triggering
+
 jobs:
   check_binary:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
     
     steps:
@@ -15,7 +17,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: swazau/gocryptfs-magisk
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.head.sha || github.ref }}
         
     - name: Set execute permission
       run: chmod +x ./system/bin/gocryptfs
@@ -34,5 +36,4 @@ jobs:
       run: |
         ./system/bin/gocryptfs --help
         echo "Binary execution successful"
-
     # Add more checks as needed
