@@ -1,37 +1,11 @@
 name: Check gocryptfs binary
-
 on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:  # This allows manual triggering
 
 jobs:
-  check_trigger:
-    runs-on: buildjet-4vcpu-ubuntu-2204-arm
-    outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
-    steps:
-    - name: Print trigger type
-      run: |
-        echo "Trigger type: ${{ github.event_name }}"
-        echo "GitHub ref: ${{ github.ref }}"
-        echo "GitHub SHA: ${{ github.sha }}"
-        echo "Base ref: ${{ github.base_ref }}"
-        echo "Head ref: ${{ github.head_ref }}"
-    - id: check
-      name: Check if should run
-      run: |
-        if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.head_ref }}" == "main" && "${{ github.base_ref }}" == "main" ]] || \
-           [[ "${{ github.event_name }}" == "workflow_dispatch" ]] || \
-           [[ "${{ github.run_attempt }}" != "1" ]]; then
-          echo "should_run=true" >> $GITHUB_OUTPUT
-        else
-          echo "should_run=false" >> $GITHUB_OUTPUT
-        fi
-
   check_binary:
-    needs: check_trigger
-    if: needs.check_trigger.outputs.should_run == 'true'
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
     
     steps:
@@ -72,4 +46,3 @@ jobs:
       run: |
         ./system/bin/gocryptfs --help
         echo "Binary execution successful"
-    # Add more checks as needed
