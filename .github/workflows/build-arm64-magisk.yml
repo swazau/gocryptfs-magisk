@@ -46,7 +46,7 @@ jobs:
       with:
         repository: swazau/gocryptfs-magisk
         path: gocryptfs-magisk
-        token: ${{ secrets.PAT_TOKEN }}
+        token: ${{ secrets.ACTIONS_SECRET }}
         
     - name: Copy binary to Magisk module folder
       run: |
