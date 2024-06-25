@@ -1,10 +1,13 @@
 name: Build gocryptfs for ARM64 and package as Magisk module
+
 on:
   push:
     branches: [ workflows ]
   workflow_dispatch:
+
 jobs:
   build:
+    if: github.event_name != 'pull_request'
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
     
     steps:
@@ -38,6 +41,12 @@ jobs:
         
     - name: Strip debug information
       run: strip gocryptfs
+      
+    - name: Upload gocryptfs binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: gocryptfs-arm64
+        path: ./gocryptfs
         
     - name: Checkout gocryptfs-magisk repository
       uses: actions/checkout@v3
@@ -56,7 +65,7 @@ jobs:
       with:
         token: ${{ secrets.ACTIONS_SECRET }}
         path: gocryptfs-magisk
-        base: main  # Specify the base branch for the pull request
+        base: master
         branch: update-gocryptfs-binary
         title: Update gocryptfs binary to version ${{ env.version }}
         body: |
@@ -65,3 +74,35 @@ jobs:
           This pull request updates the gocryptfs binary in the Magisk module to the latest build version.
         commit-message: Update gocryptfs binary to version ${{ env.version }}
         delete-branch: true
+        
+  check_binary:
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    needs: build
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: gocryptfs-arm64
+        path: ./
+
+    - name: Set execute permission
+      run: chmod +x ./gocryptfs
+
+    - name: Check binary version
+      run: |
+        ./gocryptfs --version
+        echo "Binary version: $(./gocryptfs --version)"
+
+    - name: Check binary file type
+      run: |
+        file ./gocryptfs
+        echo "File type: $(file ./gocryptfs)"
+
+    - name: Check binary execution
+      run: |
+        ./gocryptfs --help
+        echo "Binary execution successful"
+
+    # Add more checks as needed
