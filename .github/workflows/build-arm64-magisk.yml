@@ -59,10 +59,10 @@ jobs:
         token: ${{ secrets.ACTIONS_SECRET }}
         path: gocryptfs-magisk
         branch: update-gocryptfs-binary
-        title: Update gocryptfs binary
+        title: Update gocryptfs binary to version ${{ env.version }}
         body: |
-          Automated update of gocryptfs binary.
+          Automated update of gocryptfs binary to version ${{ env.version }}.
           
-          This pull request updates the gocryptfs binary in the Magisk module.
-        commit-message: Update gocryptfs binary
+          This pull request updates the gocryptfs binary in the Magisk module to the latest build version.
+        commit-message: Update gocryptfs binary to version ${{ env.version }}
         delete-branch: true
