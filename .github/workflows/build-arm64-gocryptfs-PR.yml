@@ -1,8 +1,8 @@
 name: Build gocryptfs for ARM64 and create PR
 
 on:
-  push:
-    branches: [ main ]
+#  push: # re-add if you want gocryptfs built each push
+#    branches: [ main ]
   workflow_dispatch:
 
 jobs:

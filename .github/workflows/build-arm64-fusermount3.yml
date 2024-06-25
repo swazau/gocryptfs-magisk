@@ -1,0 +1,38 @@
+name: Build fusermount3 for ARM64
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential meson ninja-build pkg-config libfuse3-dev udev
+
+    - name: Clone libfuse
+      run: git clone https://github.com/libfuse/libfuse.git
+
+    - name: Build fusermount3
+      run: |
+        cd libfuse
+        mkdir build
+        cd build
+        meson ..
+        ninja
+        sudo ninja install
+
+    - name: Copy fusermount3 binary
+      run: sudo cp /usr/local/bin/fusermount3 ./fusermount3
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: fusermount3-arm64
+        path: ./fusermount3
