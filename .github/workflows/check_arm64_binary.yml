@@ -5,10 +5,20 @@ on:
     branches: [ workflows ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  
+  workflow_dispatch:  # This allows manual triggering
 
 jobs:
+  check_trigger:
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    steps:
+    - name: Print trigger type
+      run: |
+        echo "Trigger type: ${{ github.event_name }}"
+        echo "GitHub ref: ${{ github.ref }}"
+        echo "GitHub SHA: ${{ github.sha }}"
+
   check_binary:
+    needs: check_trigger
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
     
