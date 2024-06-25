@@ -1,5 +1,9 @@
 name: Build gocryptfs for ARM64 and package as Magisk module
 on:
+  push:
+    branches: [ workflows ]
+  pull_request:
+    branches: [ workflows ]
   workflow_dispatch:
 jobs:
   build:
