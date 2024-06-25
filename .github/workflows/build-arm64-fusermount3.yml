@@ -1,4 +1,4 @@
-name: Build fusermount3 for ARM64
+name: Build static fusermount3 for ARM64
 
 on:
   push:
@@ -19,20 +19,28 @@ jobs:
     - name: Clone libfuse
       run: git clone https://github.com/libfuse/libfuse.git
 
-    - name: Build fusermount3
+    - name: Build static fusermount3
       run: |
         cd libfuse
         mkdir build
         cd build
-        meson ..
+        meson .. -Ddefault_library=static -Dudevrulesdir=/etc/udev/rules.d
         ninja
         sudo ninja install
 
+    - name: Create static fusermount3 binary
+      run: |
+        cd libfuse/build/util
+        gcc -static fusermount3.c -o fusermount3.static $(pkg-config fuse3 --cflags --libs) -lpthread
+
+    - name: Strip binary
+      run: strip libfuse/build/util/fusermount3.static
+
     - name: Copy fusermount3 binary
-      run: sudo cp /usr/local/bin/fusermount3 ./fusermount3
+      run: cp libfuse/build/util/fusermount3.static ./fusermount3
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: fusermount3-arm64
+        name: fusermount3-arm64-static
         path: ./fusermount3
