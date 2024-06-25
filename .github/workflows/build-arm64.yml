@@ -1,0 +1,41 @@
+name: Build gocryptfs for ARM64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    
+    steps:
+    - name: Checkout gocryptfs
+      uses: actions/checkout@v3
+      with:
+        repository: rfjakob/gocryptfs
+        ref: master
+        
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+        
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libssl-dev libfuse-dev pkg-config
+        
+    - name: Generate go.sum
+      run: go mod tidy
+        
+    - name: Build gocryptfs
+      run: |
+        CGO_ENABLED=1 go build -v -tags without_openssl -ldflags='-linkmode external -extldflags "-fno-PIC -static -Wl,--dynamic-linker=/system/bin/linker64"' -o gocryptfs .
+        
+    - name: Strip debug information
+      run: strip gocryptfs
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gocryptfs-arm64
+        path: ./gocryptfs
