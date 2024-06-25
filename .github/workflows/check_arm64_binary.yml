@@ -4,11 +4,10 @@ on:
   push:
     branches: [ workflows ]
   pull_request:
-    branches: [ workflows ]
-
+    branches: [ main ]
 jobs:
   check_binary:
-    if: github.event_name != 'push'
+    if: github.event_name == 'pull_request'
     runs-on: buildjet-4vcpu-ubuntu-2204-arm
     
     steps:
