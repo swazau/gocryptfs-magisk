@@ -1,0 +1,36 @@
+name: Check gocryptfs binary
+
+on:
+  pull_request:
+    branches: [ workflows ]
+
+jobs:
+  check_binary:
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    
+    steps:
+    - name: Checkout gocryptfs-magisk repository
+      uses: actions/checkout@v3
+      with:
+        repository: swazau/gocryptfs-magisk
+        ref: ${{ github.event.pull_request.head.sha }}
+        
+    - name: Set execute permission
+      run: chmod +x ./system/bin/gocryptfs
+
+    - name: Check binary version
+      run: |
+        ./system/bin/gocryptfs --version
+        echo "Binary version: $(./system/bin/gocryptfs --version)"
+
+    - name: Check binary file type
+      run: |
+        file ./system/bin/gocryptfs
+        echo "File type: $(file ./system/bin/gocryptfs)"
+
+    - name: Check binary execution
+      run: |
+        ./system/bin/gocryptfs --help
+        echo "Binary execution successful"
+
+    # Add more checks as needed

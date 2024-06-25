@@ -76,35 +76,3 @@ jobs:
           This pull request updates the gocryptfs binary in the Magisk module to the latest build version.
         commit-message: Update gocryptfs binary to version ${{ env.version }}
         delete-branch: true
-        
-  check_binary:
-    runs-on: buildjet-4vcpu-ubuntu-2204-arm
-    needs: build
-    if: github.event_name == 'pull_request'
-    
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: gocryptfs-arm64
-        path: ./
-
-    - name: Set execute permission
-      run: chmod +x ./gocryptfs
-
-    - name: Check binary version
-      run: |
-        ./gocryptfs --version
-        echo "Binary version: $(./gocryptfs --version)"
-
-    - name: Check binary file type
-      run: |
-        file ./gocryptfs
-        echo "File type: $(file ./gocryptfs)"
-
-    - name: Check binary execution
-      run: |
-        ./gocryptfs --help
-        echo "Binary execution successful"
-
-    # Add more checks as needed
