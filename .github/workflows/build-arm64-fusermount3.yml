@@ -19,7 +19,7 @@ jobs:
     - name: Clone libfuse
       run: git clone https://github.com/libfuse/libfuse.git
 
-    - name: Build static fusermount3
+    - name: Build static libfuse
       run: |
         cd libfuse
         mkdir build
@@ -30,14 +30,14 @@ jobs:
 
     - name: Create static fusermount3 binary
       run: |
-        cd libfuse/build/util
-        gcc -static fusermount3.c -o fusermount3.static $(pkg-config fuse3 --cflags --libs) -lpthread
+        cd libfuse/util
+        gcc -static fusermount.c -o fusermount3.static $(pkg-config fuse3 --cflags --libs) -lpthread
 
     - name: Strip binary
-      run: strip libfuse/build/util/fusermount3.static
+      run: strip libfuse/util/fusermount3.static
 
     - name: Copy fusermount3 binary
-      run: cp libfuse/build/util/fusermount3.static ./fusermount3
+      run: cp libfuse/util/fusermount3.static ./fusermount3
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3

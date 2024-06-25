@@ -1,4 +1,4 @@
-name: Build gocryptfs for ARM64 and create PR
+name: Build gocryptfs for ARM64 + PR
 
 on:
 #  push: # re-add if you want gocryptfs built each push
