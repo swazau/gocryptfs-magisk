@@ -30,7 +30,7 @@ jobs:
         gcc -static -o fusermount3.static \
           libfuse/util/fusermount.c \
           libfuse/lib/mount_util.c \
-          -I libfuse/include -I libfuse/build \
+          -I libfuse/include -I libfuse/build -I libfuse/lib \
           -L/usr/local/lib -lfuse3 -lpthread
     - name: Strip binary
       run: strip fusermount3.static
