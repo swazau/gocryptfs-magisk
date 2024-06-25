@@ -1,9 +1,5 @@
 name: Build gocryptfs for ARM64 and package as Magisk module
 on:
-  push:
-    branches: [ workflows ]
-  pull_request:
-    branches: [ workflows ]
   workflow_dispatch:
 jobs:
   build:
@@ -60,8 +56,14 @@ jobs:
         git commit -m "Update gocryptfs binary"
         
     - name: Create Pull Request
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cd gocryptfs-magisk
-        gh pr create --title "Update gocryptfs binary" --body "Automated update of gocryptfs binary"
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.ACTIONS_SECRET }}
+        branch: update-gocryptfs-binary
+        title: Update gocryptfs binary
+        body: |
+          Automated update of gocryptfs binary.
+          
+          This pull request updates the gocryptfs binary in the Magisk module.
+        commit-message: Update gocryptfs binary
+        delete-branch: true
