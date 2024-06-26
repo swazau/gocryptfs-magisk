@@ -1,0 +1,64 @@
+name: Check gocryptfs binary Standalone
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # This allows manual triggering
+
+jobs:
+  check_binary:
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    
+    steps:
+    - name: Checkout gocryptfs-magisk repository
+      uses: actions/checkout@v3
+      with:
+        repository: swazau/gocryptfs-magisk
+        ref: ${{ github.event.pull_request.head.sha || github.ref }}
+        
+    - name: List repository contents
+      run: |
+        echo "Repository contents:"
+        ls -R
+        
+    - name: Check if gocryptfs binary exists
+      run: |
+        if [ -f "./system/bin/gocryptfs" ]; then
+          echo "gocryptfs binary found"
+        else
+          echo "gocryptfs binary not found"
+          exit 1
+        fi
+
+    - name: Set execute permission
+      run: chmod +x ./system/bin/gocryptfs
+      
+    - name: List file details
+      run: |
+        ls -l ./system/bin/gocryptfs
+        file ./system/bin/gocryptfs
+
+    - name: Check working directory
+      run: |
+        pwd
+        ls -la
+
+    - name: Check binary version with full path
+      run: |
+        full_path=$(realpath ./system/bin/gocryptfs)
+        echo "Full path: $full_path"
+        $full_path --version
+
+    - name: Check binary version
+      run: |
+        ./system/bin/gocryptfs --version
+        echo "Binary version: $(./system/bin/gocryptfs --version)"
+
+    - name: Check binary file type
+      run: |
+        file ./system/bin/gocryptfs
+        echo "File type: $(file ./system/bin/gocryptfs)"
+
+    - name: Check binary execution
+      run: |
+        ./system/bin/gocryptfs --help
+        echo "Binary execution successful"
