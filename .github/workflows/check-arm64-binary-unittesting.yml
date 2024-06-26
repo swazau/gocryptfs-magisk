@@ -1,0 +1,20 @@
+name: gocryptfs arm64 Unit Testing
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm64
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.18
+    - name: Run tests
+      run: |
+        chmod +x system/bin/gocryptfs
+        go test -v ./... -exec ./system/bin/gocryptfs
