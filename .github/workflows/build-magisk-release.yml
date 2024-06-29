@@ -23,18 +23,8 @@ jobs:
 
     - name: Build Magisk module
       run: |
-        # Create a temporary directory for the module files
-        mkdir -p temp
-
-        # Copy the necessary folders and files to the temporary directory
-        cp -r META-INF temp/
-        cp -r system temp/
-        cp install.sh temp/
-        cp module.prop temp/
-        cp uninstall.sh temp/
-
         # Create the module ZIP file with the desired naming convention
-        zip -r gocryptfs-magisk-${{ steps.version.outputs.version }}-release.zip temp/*
+        zip -r gocryptfs-magisk-${{ steps.version.outputs.version }}-release.zip META-INF system install.sh module.prop uninstall.sh
 
     - name: Create release
       id: create_release
