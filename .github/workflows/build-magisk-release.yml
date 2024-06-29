@@ -16,7 +16,7 @@ jobs:
 
     - name: Set version number
       id: version
-      run: echo "::set-output name=version::v1.0"
+      run: echo "::set-output name=version::v1.0.1"
 
     - name: Build Magisk module
       run: |
