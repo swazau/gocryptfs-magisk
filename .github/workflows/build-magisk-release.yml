@@ -1,0 +1,55 @@
+name: Magisk Module Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set version number
+      id: version
+      run: echo "::set-output name=version::v1.0"
+
+    - name: Build Magisk module
+      run: |
+        # Create the module directory structure
+        mkdir -p magisk_module
+
+        # Copy the necessary folders and files to the module directory
+        cp -r META-INF magisk_module/
+        cp -r system magisk_module/
+        cp install.sh magisk_module/
+        cp module.prop magisk_module/
+        cp uninstall.sh magisk_module/
+
+        # Create the module ZIP file with the desired naming convention
+        zip -r gocryptfs-magisk-${{ steps.version.outputs.version }}-release.zip magisk_module
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.ACTIONS_SECRET }}
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: Release ${{ steps.version.outputs.version }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Magisk module
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.ACTIONS_SECRET }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./gocryptfs-magisk-${{ steps.version.outputs.version }}-release.zip
+        asset_name: gocryptfs-magisk-${{ steps.version.outputs.version }}-release.zip
+        asset_content_type: application/zip
