@@ -18,6 +18,9 @@ jobs:
       id: version
       run: echo "::set-output name=version::v1.0.1"
 
+    - name: Update module.prop version
+      run: sed -i "s/version=.*/version=${{ steps.version.outputs.version }}/g" module.prop
+
     - name: Build Magisk module
       run: |
         # Create a temporary directory for the module files
