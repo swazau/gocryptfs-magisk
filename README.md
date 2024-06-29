@@ -40,4 +40,4 @@ Magisk must have "Mount Namespace Mode" set to "Global". Otherwise, only the roo
 
 ## Included Binaries
 - fusermount3
-- gocryptfs 2.4
+- gocryptfs v2.4.0-33-gf06f27e
