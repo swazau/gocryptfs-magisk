@@ -7,9 +7,15 @@ on:
   workflow_dispatch:
 
 jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -34,6 +40,7 @@ jobs:
       with:
         tag_name: ${{ steps.version.outputs.version }}
         release_name: Release ${{ steps.version.outputs.version }}
+        body: ${{ steps.release_draft.outputs.body }}
         draft: false
         prerelease: false
 
