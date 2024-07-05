@@ -4,7 +4,7 @@
 This project provides working fusermount3 and gocryptfs binaries for arm64 devices, packaged as a Magisk module.
 
 ## Version
-Current version: v1.0
+Current version: v1.0.1
 
 ## Requirements
 - ARM64 device
