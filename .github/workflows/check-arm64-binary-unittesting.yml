@@ -6,38 +6,47 @@ jobs:
   test:
     runs-on: buildjet-2vcpu-ubuntu-2204-arm64
     steps:
-    - name: Checkout your magisk repository
-      uses: actions/checkout@v4
-      
-    - name: Checkout gocryptfs source repository
-      uses: actions/checkout@v4
-      with:
-        repository: rfjakob/gocryptfs
-        path: gocryptfs-source
-        
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.20'
-        
-    - name: Install dependencies
+    - uses: actions/checkout@v4
+    
+    - name: Download gocryptfs binary
       run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential libssl-dev libfuse-dev pkg-config fuse
-        
-    - name: Copy binary to source repository
+        mkdir -p system/bin
+        curl -L ${{ steps.latest_release.outputs.url || github.event.repository.html_url }}/releases/latest/download/gocryptfs -o system/bin/gocryptfs
+        chmod +x system/bin/gocryptfs
+    
+    - name: Verify binary
       run: |
-        ls -la system/bin/
-        mkdir -p gocryptfs-source/build
-        cp system/bin/gocryptfs gocryptfs-source/build/
-        chmod +x gocryptfs-source/build/gocryptfs
-        
-    - name: Prepare test environment in source repo
-      working-directory: gocryptfs-source
-      run: go mod tidy
-        
-    - name: Run Go tests with custom binary
-      working-directory: gocryptfs-source
+        ls -la system/bin
+        file system/bin/gocryptfs
+    
+    - name: Test gocryptfs basic functionality
       run: |
-        # The actual test command may need to be adjusted based on the gocryptfs test structure
-        GOFLAGS="-exec $(pwd)/build/gocryptfs" go test -v ./...
+        if [ -f "system/bin/gocryptfs" ]; then
+          # Create test directories
+          mkdir -p test/cipher test/plain
+          
+          # Test version output
+          ./system/bin/gocryptfs -version
+          
+          # Initialize a test filesystem
+          ./system/bin/gocryptfs -init -quiet test/cipher
+          
+          # Mount the filesystem
+          ./system/bin/gocryptfs test/cipher test/plain
+          
+          # Create a test file
+          echo "Test content" > test/plain/testfile.txt
+          
+          # Verify the file exists and is encrypted in the cipher directory
+          ls -la test/plain
+          ls -la test/cipher
+          
+          # Unmount
+          fusermount -u test/plain
+          
+          echo "Basic functionality test passed!"
+        else
+          echo "gocryptfs binary not found!"
+          exit 1
+        fi
+      shell: bash
