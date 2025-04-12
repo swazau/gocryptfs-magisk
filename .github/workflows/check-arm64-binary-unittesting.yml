@@ -6,57 +6,38 @@ jobs:
   test:
     runs-on: buildjet-2vcpu-ubuntu-2204-arm64
     steps:
-    - uses: actions/checkout@v4
-    
+    - name: Checkout your magisk repository
+      uses: actions/checkout@v4
+      
+    - name: Checkout gocryptfs source repository
+      uses: actions/checkout@v4
+      with:
+        repository: rfjakob/gocryptfs
+        path: gocryptfs-source
+        
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
         go-version: '1.20'
-    
-    - name: Get latest release info
-      id: latest_release
-      uses: actions/github-script@v7
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const response = await github.rest.repos.listReleases({
-            owner: context.repo.owner,
-            repo: context.repo.repo
-          });
-          
-          const releases = response.data.filter(release => 
-            release.tag_name.startsWith('arm64-v')
-          );
-          
-          if (releases.length === 0) {
-            core.setFailed('No ARM64 releases found');
-            return;
-          }
-          
-          const latest = releases.sort((a, b) => 
-            new Date(b.created_at) - new Date(a.created_at)
-          )[0];
-          
-          core.setOutput('tag', latest.tag_name);
-          core.setOutput('url', latest.assets[0].browser_download_url);
-    
-    - name: Download gocryptfs binary
+        
+    - name: Install dependencies
       run: |
-        mkdir -p system/bin
-        curl -L ${{ steps.latest_release.outputs.url }} -o system/bin/gocryptfs
-        chmod +x system/bin/gocryptfs
-    
-    - name: Verify binary
+        sudo apt-get update
+        sudo apt-get install -y build-essential libssl-dev libfuse-dev pkg-config fuse
+        
+    - name: Copy binary to source repository
       run: |
-        ls -la system/bin
-        file system/bin/gocryptfs
-    
-    - name: Run tests
+        ls -la system/bin/
+        mkdir -p gocryptfs-source/build
+        cp system/bin/gocryptfs gocryptfs-source/build/
+        chmod +x gocryptfs-source/build/gocryptfs
+        
+    - name: Prepare test environment in source repo
+      working-directory: gocryptfs-source
+      run: go mod tidy
+        
+    - name: Run Go tests with custom binary
+      working-directory: gocryptfs-source
       run: |
-        if [ -f "system/bin/gocryptfs" ]; then
-          go test -v ./... -exec ./system/bin/gocryptfs
-        else
-          echo "gocryptfs binary not found!"
-          exit 1
-        fi
-      shell: bash
+        # The actual test command may need to be adjusted based on the gocryptfs test structure
+        GOFLAGS="-exec $(pwd)/build/gocryptfs" go test -v ./...
