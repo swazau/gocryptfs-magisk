@@ -46,6 +46,16 @@ jobs:
         with:
           name: gocryptfs-arm64
           path: ./gocryptfs
+      
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.ACTIONS_SECRET }}
+          name: gocryptfs ARM64 v${{ env.version }}
+          tag_name: arm64-v${{ env.version }}
+          files: ./gocryptfs
+          prerelease: true
           
       - name: Checkout gocryptfs-magisk repository
         uses: actions/checkout@v4
