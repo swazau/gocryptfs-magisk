@@ -1,55 +1,92 @@
 name: Magisk Module Release
-
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
+    inputs:
+      version_increment:
+        description: 'Version increment type (patch, minor, major)'
+        required: false
+        default: 'patch'
+        
 jobs:
-  update_release_draft:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: release-drafter/release-drafter@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build:
+  build_and_release:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set version number
-      id: version
-      run: echo "::set-output name=version::v1.0.1"
-
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        
+    - name: Get latest tag
+      id: get_latest_tag
+      run: |
+        git fetch --tags
+        LATEST_TAG=$(git tag -l "v*" | sort -V | tail -n 1)
+        if [ -z "$LATEST_TAG" ]; then
+          LATEST_TAG="v1.0.0"
+        fi
+        echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+        
+    - name: Compute new version
+      id: compute_version
+      run: |
+        LATEST_TAG="${{ steps.get_latest_tag.outputs.latest_tag }}"
+        MAJOR=$(echo $LATEST_TAG | cut -d. -f1 | sed 's/v//')
+        MINOR=$(echo $LATEST_TAG | cut -d. -f2)
+        PATCH=$(echo $LATEST_TAG | cut -d. -f3)
+        
+        INCREMENT="${{ github.event.inputs.version_increment }}"
+        if [ "$INCREMENT" = "major" ]; then
+          MAJOR=$((MAJOR + 1))
+          MINOR=0
+          PATCH=0
+        elif [ "$INCREMENT" = "minor" ]; then
+          MINOR=$((MINOR + 1))
+          PATCH=0
+        else
+          PATCH=$((PATCH + 1))
+        fi
+        
+        NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Check if tag exists
+      id: check_tag
+      run: |
+        if git rev-parse "refs/tags/${{ steps.compute_version.outputs.new_version }}" >/dev/null 2>&1; then
+          echo "tag_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "tag_exists=false" >> $GITHUB_OUTPUT
+        fi
+        
     - name: Update module.prop version
-      run: sed -i "s/version=.*/version=${{ steps.version.outputs.version }}/g" module.prop
-
+      if: steps.check_tag.outputs.tag_exists == 'false'
+      run: sed -i "s/version=.*/version=${{ steps.compute_version.outputs.new_version }}/g" module.prop
+      
     - name: Build Magisk module
+      if: steps.check_tag.outputs.tag_exists == 'false'
       run: |
         # Create the module ZIP file with the desired naming convention
-        zip -r gocryptfs-magisk-${{ steps.version.outputs.version }}-release.zip META-INF system install.sh module.prop uninstall.sh
-
-    - name: Create release
+        zip -r gocryptfs-magisk-${{ steps.compute_version.outputs.new_version }}-release.zip META-INF system install.sh module.prop uninstall.sh
+        
+    - name: Create Release
+      if: steps.check_tag.outputs.tag_exists == 'false'
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.ACTIONS_SECRET }}
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.version.outputs.version }}
-        release_name: Release ${{ steps.version.outputs.version }}
-        body: ${{ steps.release_draft.outputs.body }}
+        tag_name: ${{ steps.compute_version.outputs.new_version }}
+        name: Release ${{ steps.compute_version.outputs.new_version }}
         draft: false
         prerelease: false
-
-    - name: Upload Magisk module
-      uses: actions/upload-release-asset@v1
+        files: |
+          ./gocryptfs-magisk-${{ steps.compute_version.outputs.new_version }}-release.zip
       env:
-        GITHUB_TOKEN: ${{ secrets.ACTIONS_SECRET }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./gocryptfs-magisk-${{ steps.version.outputs.version }}-release.zip
-        asset_name: gocryptfs-magisk-${{ steps.version.outputs.version }}-release.zip
-        asset_content_type: application/zip
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Tag already exists
+      if: steps.check_tag.outputs.tag_exists == 'true'
+      run: |
+        echo "Version ${{ steps.compute_version.outputs.new_version }} already exists. Use workflow_dispatch with a different version increment to create a new version."
+        exit 1
