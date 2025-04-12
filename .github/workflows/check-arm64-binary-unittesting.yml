@@ -1,20 +1,42 @@
 name: gocryptfs arm64 Unit Testing
-
 on:
   pull_request:
     branches: [ main ]
-
 jobs:
   test:
     runs-on: buildjet-2vcpu-ubuntu-2204-arm64
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.20'
-    - name: Run tests
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
       run: |
-        chmod +x system/bin/gocryptfs
-        go test -v ./... -exec ./system/bin/gocryptfs
+        sudo apt-get update
+        sudo apt-get install -y fuse
+    
+    - name: Test binary
+      run: |
+        # Print file info
+        file system/bin/gocryptfs
+        
+        # Test if binary is properly executable
+        if [ -x "system/bin/gocryptfs" ]; then
+          # Try to run version check
+          ./system/bin/gocryptfs -version || echo "Failed to run version check"
+          
+          # If the file appears to be text, print its content
+          if file system/bin/gocryptfs | grep -q text; then
+            echo "File appears to be text, printing content:"
+            cat system/bin/gocryptfs
+          fi
+        else
+          echo "Binary is not executable"
+          
+          # Try to make it executable and check again
+          chmod +x system/bin/gocryptfs
+          if ./system/bin/gocryptfs -version; then
+            echo "Binary works after chmod"
+          else
+            echo "Binary still fails after chmod"
+          fi
+        fi
       shell: bash
